@@ -1,0 +1,7 @@
+Flask
+flask-mysqldb
+flask-cors
+flask-jwt-extended
+python-dotenv
+Werkzeug
+bleach

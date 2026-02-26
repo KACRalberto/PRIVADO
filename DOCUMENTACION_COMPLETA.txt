@@ -235,7 +235,7 @@ Respuestas:
 GET /auth/tareas
 Descripción: Obtiene todas las tareas del usuario autenticado
 Método: GET
-Requiere: Autenticación (usuario_id en sesión)
+Requiere: Autenticación (token JWT o sesión)
 
 Parámetros Query: Ninguno
 
@@ -260,6 +260,64 @@ Respuestas:
 
 ✗ 401 Unauthorized: Usuario no autenticado
 ✗ 500 Internal Server Error: Error en la base de datos
+
+────────────────────────────────────────────────────────────────────────────
+
+POST /auth/logout
+Descripción: Finaliza la sesión actual (borrado de cookies)
+Método: GET
+Requiere: Autenticación (cualquiera)
+
+Cuerpo: ninguno
+
+Respuestas:
+✓ 200 OK:
+{
+  "exito": "Sesión finalizada"
+}
+
+────────────────────────────────────────────────────────────────────────────
+
+POST /auth/request-password-reset
+Descripción: Genera un token de recuperación y lo guarda en BD
+Método: POST
+Requiere: No (cualquiera puede solicitarlo)
+
+Body (JSON):
+{
+  "email": "usuario@ejemplo.com"
+}
+
+Validaciones:
+- Email válido
+
+Respuestas:
+✓ 200 OK: Se devuelve el token (para que el frontend lo use en el email) o mensaje genérico
+
+✗ 400 Bad Request: Email faltante o inválido
+✗ 500 Internal Server Error: Error interno
+
+────────────────────────────────────────────────────────────────────────────
+
+POST /auth/reset-password
+Descripción: Cambia la contraseña usando un token válido
+Método: POST
+Requiere: No
+
+Body (JSON):
+{
+  "token": "token_recuperacion",
+  "password": "nueva_contraseña"
+}
+
+Validaciones:
+- Token válido y no caducado
+- Contraseña mínimo 5 caracteres
+
+Respuestas:
+✓ 200 OK: Contraseña actualizada
+✗ 400 Bad Request: Token inválido/expirado o datos faltantes
+✗ 500 Internal Server Error: Error interno
 
 ================================================================================
 6. CONFIGURACIÓN DEL BACKEND
@@ -326,10 +384,15 @@ Funciones:
 4. getTareas(): Obtiene tareas del usuario (GET)
 
 Características de seguridad:
-- Hashing de contraseñas con werkzeug.security
-- Validación de JWT
-- Sesiones de usuario
-- Verificación de autenticación en cada endpoint
+- Hashing de contraseñas con werkzeug.security (salt automático)
+- Validación y creación de JWT para proteger rutas
+- Sesiones de usuario con cookies HTTPOnly/SameSite
+- Verificación de autenticación en cada endpoint con `@jwt_required`
+- Sanitización de entradas en servidor usando `bleach` y regex
+- Preparación de consultas parametrizadas (%s) para impedir inyección SQL
+- Cabeceras de seguridad (`X-Frame-Options`, `X-Content-Type-Options`, CSP, Referrer-Policy) añadidas en `app.after_request`
+- Cookies `Secure` en entorno de producción
+- Endpoints de recuperación y reinicio de contraseña con tokens de un solo uso
 
 ================================================================================
 8. INSTALACIÓN Y CONFIGURACIÓN
@@ -670,7 +733,11 @@ IMPLEMENTADAS:
 ✓ Hashing de contraseñas con werkzeug.security
 ✓ JWT para tokens de autenticación
 ✓ CORS configurado restrictivamente
-✓ Validación de entrada en servidor (backend)
+✓ Validación y sanitización de entrada en servidor (bleach + regex)
+✓ Sanitización ligera en el cliente antes de enviar formularios
+✓ Uso de consultas parametrizadas para evitar SQL injection
+✓ Cabeceras HTTP de seguridad añadidas (CSP, X-Frame-Options, etc.)
+✓ Cookies HTTPOnly, SameSite y Secure (en producción)
 ✓ Sesiones de usuario
 
 RECOMENDACIONES PARA PRODUCCIÓN:

@@ -71,9 +71,9 @@ import ButtonsLoginRegister from '@/components/ButtonsLoginRegister.vue';
 import { ref } from 'vue';
 import axios from 'axios';
 import { useToast } from "vue-toastification";
-
+import { useRouter } from 'vue-router';
 const toast = useToast()
-
+const router = useRouter()
 let apodo = ref("")
 let email_user = ref("")
 let password_user = ref("")
@@ -81,7 +81,10 @@ let password_user_confirm = ref("")
 let all_right = ref(false)
 
 const do_register = async()=>{
+  // client-side remove any html tags
+  const clean = str => str.replace(/<[^>]*>?/gm, '')
 
+  console.log(apodo.value,email_user.value,password_user.value, password_user_confirm.value)
   if(password_user.value == password_user_confirm.value){
     all_right.value = true
   }else{
@@ -104,10 +107,13 @@ const do_register = async()=>{
   if(all_right.value){
     try{
       const response = await axios.post("http://localhost:5000/auth/register",{
-        email: email_user.value,
-        password: password_user_confirm.value,
+        email: clean(email_user.value),
+        name: clean(apodo.value),
+        password: password_user.value,
         password_check: password_user_confirm.value
-      }, { withCredentials: true })
+      }, {
+        withCredentials: true
+      })
       if(response.status === 200){
         toast.success("Usuario registrado correctamente", {
                 position: "bottom-center",
@@ -123,6 +129,9 @@ const do_register = async()=>{
                 icon: false,
                 rtl: false,
               })
+        localStorage.setItem("TOKEN", response.data.token)
+        localStorage.setItem("USER_ID", response.data.user)
+        router.push("/home")
       }
 
     }catch(error){

@@ -43,6 +43,9 @@
           ¿Aún no tienes cuenta? 
           <span class="text-[#ff5252] font-semibold">Regístrate</span>
         </router-link>
+        <router-link class="text-center mt-2 text-gray-600" to="/forgot-password">
+          <span class="text-sm text-[#ff5252]">¿Olvidaste tu contraseña?</span>
+        </router-link>
       </form>
 
       <!-- Div de bienvenida -->
@@ -67,8 +70,10 @@ import ButtonsLoginRegister from '@/components/ButtonsLoginRegister.vue';
 import { ref } from 'vue';
 import axios from 'axios';
 import { useToast } from "vue-toastification";
-import router from '@/router';
+import { useRouter } from 'vue-router';
 
+
+const router = useRouter()
 let email_login = ref("")
 let password_login = ref("")
 
@@ -79,10 +84,13 @@ const toast = useToast()
 
 const do_login = async()=>{
     try{
+      const clean = str => str.replace(/<[^>]*>?/gm, '')
       const response = await axios.post("http://localhost:5000/auth/login",{
-        email: email_login.value,
+        email: clean(email_login.value),
         password: password_login.value
-      }, { withCredentials: true })
+      }, {
+        withCredentials: true
+      })
       if(response.status === 200){
         toast.success("Todo correcto", {
                 position: "bottom-center",
@@ -98,9 +106,10 @@ const do_login = async()=>{
                 icon: false,
                 rtl: false,
               });
+        console.log(response)
         const token = response.data.token
         localStorage.setItem("TOKEN", response.data.token)
-        localStorage.setItem("USER_ID", response.config.data)
+        localStorage.setItem("USER_ID", response.data.user)
         router.push("/home")
 
       }

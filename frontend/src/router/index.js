@@ -10,6 +10,11 @@ const router = createRouter({
   routes: [{ path: '/', component: () => import('@/views/homeViewPage.vue'), meta:{isPublic: true} },
     {path: "/register", component: ()=> import("@/views/RegisterViewPage.vue")},
     {path: "/login", component: ()=> import("@/views/LoginViewPage.vue")},
+    {path: "/forgot-password", component: ()=> import("@/views/ForgotPasswordViewPage.vue"), meta:{isPublic: true}},
+    {path: "/reset-password", component: ()=> import("@/views/ResetPasswordViewPage.vue"), meta:{isPublic: true}},
+    {path: "/services", component: ()=> import("@/views/ServicesViewPage.vue"), meta:{isPublic: true}},
+    {path: "/about", component: ()=> import("@/views/AboutViewPage.vue"), meta:{isPublic: true}},
+    {path: "/contact", component: ()=> import("@/views/ContactViewPage.vue"), meta:{isPublic: true}},
     {path : "/home", component: ()=> import("@/views/homeUserViewPage.vue"), meta:{requiresToken : true}}
 
   ],

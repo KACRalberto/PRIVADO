@@ -11,31 +11,35 @@
     >
       <ul class="flex gap-5">
         <li>
-          <router-link to="/">
-            <a href="#" class="transition ease-in-out duration-500 delay-100 hover:text-[#ff5252]"
-            >Inicio</a
-            >
+          <router-link
+            to="/"
+            :class="[{ 'text-[#ff5252] font-bold': route.path === '/' }, 'transition ease-in-out duration-500 delay-100 hover:text-[#ff5252]']"
+          >
+            Inicio
           </router-link>
         </li>
         <li>
-            <router-link to="/services">
-            <a href="#" class="transition ease-in-out duration-500 delay-100 hover:text-[#ff5252]"
-            >Servicios</a
-            >
+          <router-link
+            to="/services"
+            :class="[{ 'text-[#ff5252] font-bold': route.path === '/services' }, 'transition ease-in-out duration-500 delay-100 hover:text-[#ff5252]']"
+          >
+            Servicios
           </router-link>
         </li>
         <li>
-          <router-link to="/about">
-            <a href="#" class="transition ease-in-out duration-500 delay-100 hover:text-[#ff5252]"
-            >Nosotros</a
-            >
+          <router-link
+            to="/about"
+            :class="[{ 'text-[#ff5252] font-bold': route.path === '/about' }, 'transition ease-in-out duration-500 delay-100 hover:text-[#ff5252]']"
+          >
+            Nosotros
           </router-link>
         </li>
         <li>
-          <router-link to="/contact">
-            <a href="#" class="transition ease-in-out duration-500 delay-100 hover:text-[#ff5252]"
-            >Contacto</a
-            >
+          <router-link
+            to="/contact"
+            :class="[{ 'text-[#ff5252] font-bold': route.path === '/contact' }, 'transition ease-in-out duration-500 delay-100 hover:text-[#ff5252]']"
+          >
+            Contacto
           </router-link>
         </li>
       </ul>
@@ -52,28 +56,52 @@
         >
           <ul class="flex flex-col">
             <li
-              class="h-15 flex items-center justify-center bg-[#EFF8FE] animate__animated animate__fadeInLeft group hover:bg-[#DCE3E8]"
+              class="h-15 flex items-center justify-center bg-[#B8BDB5] animate__animated animate__fadeInLeft group hover:bg-[#DCE3E8]"
               style="animation-delay: 0s"
             >
-              <a href="#" class="block group-hover:font-[900]">Inicio</a>
+              <router-link
+                to="/"
+                class="block w-full"
+                :class="[{ 'font-[900] text-[#ff5252] bg-[#DCE3E8]': route.path === '/' }, 'group-hover:font-[900]']"
+              >
+                Inicio
+              </router-link>
             </li>
             <li
-              class="h-15 flex items-center justify-center bg-[#EFF8FE] animate__animated animate__fadeInLeft group hover:bg-[#DCE3E8]"
+              class="h-15 flex items-center justify-center bg-[#B8BDB5] animate__animated animate__fadeInLeft group hover:bg-[#DCE3E8]"
               style="animation-delay: 0.2s"
             >
-              <a href="#" class="block group-hover:font-[900]">Servicios</a>
+              <router-link
+                to="/services"
+                class="block w-full"
+                :class="[{ 'font-[900] text-[#ff5252] bg-[#DCE3E8]': route.path === '/services' }, 'group-hover:font-[900]']"
+              >
+                Servicios
+              </router-link>
             </li>
             <li
-              class="h-15 flex items-center justify-center bg-[#EFF8FE] animate__animated animate__fadeInLeft group hover:bg-[#DCE3E8]"
+              class="h-15 flex items-center justify-center bg-[#B8BDB5] animate__animated animate__fadeInLeft group hover:bg-[#DCE3E8]"
               style="animation-delay: 0.4s"
             >
-              <a href="#" class="block group-hover:font-[900]">Nosotros</a>
+              <router-link
+                to="/about"
+                class="block w-full"
+                :class="[{ 'font-[900] text-[#ff5252] bg-[#DCE3E8]': route.path === '/about' }, 'group-hover:font-[900]']"
+              >
+                Nosotros
+              </router-link>
             </li>
             <li
-              class="h-15 flex items-center justify-center bg-[#EFF8FE] animate__animated animate__fadeInLeft group hover:bg-[#DCE3E8]"
+              class="h-15 flex items-center justify-center bg-[#B8BDB5] animate__animated animate__fadeInLeft group hover:bg-[#DCE3E8]"
               style="animation-delay: 0.6s"
             >
-              <a href="#" class="block group-hover:font-[900]">Contacto</a>
+              <router-link
+                to="/contact"
+                class="block w-full"
+                :class="[{ 'font-[900] text-[#ff5252] bg-[#DCE3E8]': route.path === '/contact' }, 'group-hover:font-[900]']"
+              >
+                Contacto
+              </router-link>
             </li>
           </ul>
         </div>
@@ -108,9 +136,10 @@
 <script setup>
 import { ref } from 'vue'
 import ButtonsLoginRegister from './ButtonsLoginRegister.vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 let menu_mostrado = ref(false)
 const isLoggedIn = ref(!!localStorage.getItem("TOKEN"))
 

@@ -18,11 +18,17 @@ app = Flask(__name__)
 # Secret key debe ser DIFERENTE a JWT_SECRET_KEY
 app.config['SECRET_KEY'] = os.getenv("JWT_SECRET_KEY", "dev-secret-key-change-in-production")
 
+# ========== CONFIGURACIÓN DE SESIONES PARA CORS ==========
+app.config['SESSION_COOKIE_HTTPONLY'] = True  # No accesible desde JavaScript
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Permite envío en requests desde frontend
+# Use secure cookies when running in production over HTTPS
+app.config['SESSION_COOKIE_SECURE'] = os.getenv('FLASK_ENV') == 'production'  # set to True on real server
+app.config['SESSION_COOKIE_NAME'] = 'betodo_session'
 
 # ========== CONFIGURACIÓN DE CORS ==========
 CORS(
     app, 
-    origins=["http://localhost:5173"],
+    origins=["http://localhost:5173", "http://localhost:5174"],
     supports_credentials=True,  # IMPORTANTE: permite enviar cookies
     allow_headers=["Content-Type", "Authorization"],
     expose_headers=["Content-Type"],
@@ -57,6 +63,21 @@ def before_request():
     """Marcar sesiones como permanentes"""
     session.permanent = True
     app.permanent_session_lifetime = timedelta(days=7)
+
+@app.after_request
+# add modern security headers to every response
+# this helps mitigate XSS, clickjacking, and content sniffing
+# CSP is kept simple; adjust for production
+# note: if the frontend is served from different origins modificar la política
+# antes de desplegar en producción.
+def set_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Referrer-Policy'] = 'no-referrer'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline'"
+    # Strict-Transport-Security se habilita sólo con HTTPS en producción
+    # response.headers['Strict-Transport-Security'] = 'max-age=63072000; includeSubDomains; preload'
+    return response
 
 if __name__ == "__main__":
     app.run(debug = True)
