@@ -7,6 +7,19 @@ import 'animate.css'
 import Toast from "vue-toastification"
 import "vue-toastification/dist/index.css"
 
+// global axios defaults for authentication
+import axios from 'axios'
+axios.defaults.withCredentials = true
+axios.defaults.baseURL = "http://localhost:5000"
+axios.interceptors.request.use(config => {
+  const token = localStorage.getItem("TOKEN")
+  if (token) {
+    config.headers = config.headers || {}
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
+
 const app = createApp(App)
 
 app.use(createPinia())

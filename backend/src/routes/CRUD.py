@@ -5,10 +5,15 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 import loggers
 from uuid import uuid4
 from datetime import datetime, timedelta
-
-# utilities for sanitization/validation
 import re
 import bleach
+
+
+
+
+
+
+
 
 # compile once for performance
 _email_regex = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
@@ -25,11 +30,6 @@ def is_valid_email(email: str) -> bool:
     return bool(_email_regex.match(email))
 
 
-
-
-
-
-
 AUTH = Blueprint("auth", __name__, url_prefix="/auth")
 
 debugLog = loggers.my_logger("debug_logger", "DEBUG", True, False)
@@ -38,10 +38,6 @@ fileLog = loggers.my_logger("log_file", "WARNING", False, "MyLog.log")
 
 @AUTH.route("/register", methods=["POST"])
 def register():
-
-    # if "usuario_id" in session:
-    #     return jsonify({"error": "Ya autenticado",
-    #     "session" : session["usuario_token"]}), 400
 
 
     cursor=None
@@ -121,10 +117,6 @@ def register():
 
 @AUTH.route("/login", methods=["POST"])
 def login():
-
-    # if "usuario_id" in session:
-    #     return jsonify({"error": "Ya autenticado",
-    #     "session" : session["usuario_token"]}), 400
 
     cursor=None
     data = request.get_json()
@@ -290,10 +282,21 @@ def updateTarea(tarea_id):
             return jsonify({"error": "JSON inválido"}), 400
 
         userId = session["usuario_id"]
-        nuevoEstado = sanitize_text(data.get("estado", "")).strip().lower()
 
-        if nuevoEstado not in ("pendiente", "en_marcha", "completada"):
+        # allow updating title, description and/or state. sanitize each if present
+        titulo_nuevo = sanitize_text(data.get("titulo", None))
+        descripcion_nueva = sanitize_text(data.get("descripcion", None))
+        estado_nuevo = sanitize_text(data.get("estado", "")).strip().lower() if data.get("estado") is not None else None
+
+        # validate state if provided
+        if estado_nuevo is not None and estado_nuevo not in ("pendiente", "en_marcha", "completada"):
             return jsonify({"error": "Estado inválido"}), 400
+
+        # simple length validation
+        if titulo_nuevo is not None and len(titulo_nuevo) > 100:
+            return jsonify({"error": "Título demasiado largo"}), 400
+        if descripcion_nueva is not None and len(descripcion_nueva) > 1000:
+            return jsonify({"error": "Descripción demasiado larga"}), 400
 
         cursor = conexion.connection.cursor()
 
@@ -308,9 +311,25 @@ def updateTarea(tarea_id):
         if tarea["id_usuario"] != userId:
             return jsonify({"error": "No autorizado"}), 403
 
-        # Actualizar la tarea
-        query = "UPDATE tareas SET estado = %s WHERE id_tarea = %s"
-        cursor.execute(query, (nuevoEstado, tarea_id))
+        # prepare dynamic update
+        updates = []
+        params = []
+        if titulo_nuevo is not None:
+            updates.append("titulo = %s")
+            params.append(titulo_nuevo.strip())
+        if descripcion_nueva is not None:
+            updates.append("descripcion = %s")
+            params.append(descripcion_nueva.strip())
+        if estado_nuevo is not None:
+            updates.append("estado = %s")
+            params.append(estado_nuevo)
+
+        if not updates:
+            return jsonify({"error": "No hay campos para actualizar"}), 400
+
+        params.append(tarea_id)
+        query = f"UPDATE tareas SET {', '.join(updates)} WHERE id_tarea = %s"
+        cursor.execute(query, tuple(params))
         conexion.connection.commit()
 
         return jsonify({

@@ -88,12 +88,20 @@
           </div>
 
           <!-- BOTÓN DE ELIMINACIÓN -->
-          <button
-            @click="eliminarTarea(tarea.id_tarea, tarea.titulo)"
-            class="w-full bg-red-900 hover:bg-red-800 text-red-300 py-1 px-3 rounded-lg font-semibold transition text-sm"
-          >
-            🗑️ Eliminar
-          </button>
+          <div class="flex gap-2">
+            <button
+              @click="editarTarea(tarea)"
+              class="flex-1 bg-blue-900 hover:bg-blue-800 text-blue-300 py-1 px-3 rounded-lg font-semibold transition text-sm"
+            >
+              ✏️ Editar
+            </button>
+            <button
+              @click="eliminarTarea(tarea.id_tarea, tarea.titulo)"
+              class="flex-1 bg-red-900 hover:bg-red-800 text-red-300 py-1 px-3 rounded-lg font-semibold transition text-sm"
+            >
+              🗑️ Eliminar
+            </button>
+          </div>
 
         </div>
 
@@ -246,6 +254,7 @@
 <script setup>
 import { ref, onMounted, watch } from "vue"
 import axios from "axios"
+
 import { useRouter } from "vue-router"
 const user = ref("")
 const tarea = ref("")
@@ -336,8 +345,7 @@ const completarTareaPomodoro = async () => {
     const tareaObj = tareas.value.find(t => t.id_tarea === tareaPomodoro.value)
     if (!tareaObj) return
     
-    // Aquí necesitarías un endpoint PUT para actualizar la tarea
-    // Por ahora, voy a usar un enfoque simple actualizando directamente en tareas
+    // La ruta PUT ahora acepta título/descripcion/estado, pero solo cambiamos el estado
     const res = await axios.put(`http://localhost:5000/auth/tareas/${tareaPomodoro.value}`, {
       estado: "completada"
     }, {
@@ -352,6 +360,38 @@ const completarTareaPomodoro = async () => {
     await getTareas()
   } catch (error) {
     console.error("Error al completar tarea:", error.response?.data || error.message)
+  }
+}
+
+const editarTarea = async (tarea) => {
+  // prompts for new values, allow cancel
+  const nuevoTitulo = prompt("Nuevo título:", tarea.titulo)
+  if (nuevoTitulo === null) return // user cancelled
+
+  const nuevaDesc = prompt("Nueva descripción:", tarea.descripcion)
+  if (nuevaDesc === null) return
+
+  let nuevoEstado = prompt("Nuevo estado (pendiente/en_marcha/completada):", tarea.estado)
+  if (nuevoEstado === null) return
+  nuevoEstado = nuevoEstado.trim().toLowerCase()
+  if (!["pendiente","en_marcha","completada"].includes(nuevoEstado)) {
+    alert("Estado inválido")
+    return
+  }
+
+  try {
+    const res = await axios.put(`http://localhost:5000/auth/tareas/${tarea.id_tarea}`, {
+      titulo: nuevoTitulo,
+      descripcion: nuevaDesc,
+      estado: nuevoEstado
+    }, {
+      withCredentials: true
+    })
+    console.log("Tarea actualizada:", res.data)
+    await getTareas()
+  } catch (error) {
+    console.error("Error al editar tarea:", error.response?.data || error.message)
+    alert("No se pudo actualizar la tarea")
   }
 }
 
