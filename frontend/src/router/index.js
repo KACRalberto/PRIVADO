@@ -15,7 +15,9 @@ const router = createRouter({
     {path: "/services", component: ()=> import("@/views/ServicesViewPage.vue"), meta:{isPublic: true}},
     {path: "/about", component: ()=> import("@/views/AboutViewPage.vue"), meta:{isPublic: true}},
     {path: "/contact", component: ()=> import("@/views/ContactViewPage.vue"), meta:{isPublic: true}},
-    {path : "/home", component: ()=> import("@/views/homeUserViewPage.vue"), meta:{requiresToken : true}}
+    {path : "/home", component: ()=> import("@/views/homeUserViewPage.vue"), meta:{requiresToken : true}},
+    // catch-all 404 route (must be last)
+    { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/NotFoundView.vue'), meta: { isPublic: true } }
 
   ],
 })

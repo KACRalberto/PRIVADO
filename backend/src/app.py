@@ -58,6 +58,12 @@ file_log.warning("el unico")
 
 app.register_blueprint(AUTH)
 
+
+# handle missing routes with JSON response (helps APIs and debugging)
+@app.errorhandler(404)
+def handle_404(e):
+    return jsonify({"error": "Recurso no encontrado"}), 404
+
 @app.before_request
 def before_request():
     """Marcar sesiones como permanentes"""
